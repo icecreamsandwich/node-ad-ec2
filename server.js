@@ -4,6 +4,7 @@ var express = require('express');
 var app = express();
 var path = require("path");
 var ActiveDirectory = require('activedirectory');
+var crypto = require('crypto');
 var bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -44,9 +45,9 @@ app.post("/login", function(req, res) {
     res.redirect(login_url);
   }); */
 //console.log(req.body.username + req.body.password);return false;
-var config = { url: 'ldap://192.168.1.106',
-               baseDN: 'dc=ad,dc=gasf,dc=com',
-               username: 'raj',
+var config = { url: 'ldap://ec2-54-89-136-67.compute-1.amazonaws.com',
+               baseDN: 'CN=Users,DC=ec2-54-89-136-67,DC=compute-1,DC=amazonaws,DC=com',
+               username: 'rajiv',
                password: 'tech121login*' }
 
       //get all users of a group
@@ -80,12 +81,18 @@ var config = { url: 'ldap://192.168.1.106',
         
         if (auth) {
           console.log('Authenticated!');
+          // Example
+          var password = 'rahul.u@piserve.com';
+          //console.log(getSSOUrl(username, password));return false;
+          res.redirect(getSSOUrl(username, password))
+          //console.log(getSSOUrl(username, password));	// Under express, use something like res.redirect(getSSOUrl('Name', 'email'));
         }
         else {
           console.log('Authentication failed!');
+         // res.redirect("/"); 
         }
     });
-    res.redirect("/");    
+  //  res.redirect("/");    
 
 });
  
@@ -130,5 +137,31 @@ app.get("/", autoRedirect, function(req, res){
 //Public files <this needs to stay right below app.get("/")!!!!
 app.use(express.static(__dirname + "/build")) 
  
-app.listen(80, () => console.log(`Listening on port 80`));
+app.listen(8081, () => console.log(`Listening on port 8081`));
 //app.listen(3031);
+
+  /**
+	 * Generates and returns a Freshdesk Single Sign On URL
+	 * {@link https://gist.github.com/derekseymour/26a6fe573c1274642976 Gist}
+	 *
+	 * @author Derek Seymour <derek@rocketideas.com>
+	 * @param {String} name - The name of the user logging in.
+	 * @param {String} email - A valid email address to associate with the user.
+	 * @param {String} [redirect_to] - An optional URL to redirect to after logging in.
+	 * @returns {String} Freshdesk SSO URL.
+	 */
+	function getSSOUrl(name, email, redirect_to) {
+		var freshdesk_secret = '046926591b0f9b31d43628f3b204ad3c';
+		var freshdesk_base_url = 'https://piserveassist.freshdesk.com';
+
+		var timestamp = Math.floor(new Date().getTime() / 1000).toString();
+		var hmac = crypto.createHmac('md5', freshdesk_secret);
+		hmac.update(name + freshdesk_secret + email + timestamp);
+		var hash = hmac.digest('hex');
+		return freshdesk_base_url + '/login/sso/' +
+			'?name=' + escape(name) +
+			'&email=' + escape(email) +
+			'&timestamp=' + escape(timestamp) +
+			'&hash=' + escape(hash) +
+			( typeof(redirect_to) === 'string' ? '&redirect_to=' + escape(redirect_to) : '' );
+	}
