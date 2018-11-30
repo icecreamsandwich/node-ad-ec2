@@ -49,26 +49,7 @@ var config = { url: 'ldap://ec2-54-89-136-67.compute-1.amazonaws.com',
                baseDN: 'CN=Users,DC=ec2-54-89-136-67,DC=compute-1,DC=amazonaws,DC=com',
                username: 'rajiv',
                password: 'tech121login*' }
-
-      //get all users of a group
-      /* var groupName = 'users';
-      var dn = 'CN=Users,DC=ad,DC=gasf,DC=com'
-      
-      // Find group by common name
-      var ad = new ActiveDirectory(config);
-      ad.findGroup(groupName, function(err, group) {
-        if (err) {
-          console.log('ERROR: ' +JSON.stringify(err));
-          return;
-        }
-      
-        if (! group) console.log('Group: ' + groupName + ' not found.');
-        else {
-          console.log(group);
-          console.log('Members: ' + (group.member || []).length);
-        }
-      });
- */
+               
       var ad = new ActiveDirectory(config);
       var username = req.body.username;
       var password = req.body.password;
@@ -78,7 +59,6 @@ var config = { url: 'ldap://ec2-54-89-136-67.compute-1.amazonaws.com',
           console.log('ERROR: '+JSON.stringify(err));
           return;
         }
-        
         if (auth) {
           console.log('Authenticated!');
           // Example
@@ -134,30 +114,30 @@ app.get("/", autoRedirect, function(req, res){
 app.use(express.static(__dirname + "/build")) 
  
 app.listen(8081, () => console.log(`Listening on port 8081`));
-//app.listen(3031);
 
-  /**
-	 * Generates and returns a Freshdesk Single Sign On URL
-	 * {@link https://gist.github.com/derekseymour/26a6fe573c1274642976 Gist}
-	 *
-	 * @author Derek Seymour <derek@rocketideas.com>
-	 * @param {String} name - The name of the user logging in.
-	 * @param {String} email - A valid email address to associate with the user.
-	 * @param {String} [redirect_to] - An optional URL to redirect to after logging in.
-	 * @returns {String} Freshdesk SSO URL.
-	 */
-	function getSSOUrl(name, email, redirect_to) {
-		var freshdesk_secret = '046926591b0f9b31d43628f3b204ad3c';
-		var freshdesk_base_url = 'https://piserveassist.freshdesk.com';
 
-		var timestamp = Math.floor(new Date().getTime() / 1000).toString();
-		var hmac = crypto.createHmac('md5', freshdesk_secret);
-		hmac.update(name + freshdesk_secret + email + timestamp);
-		var hash = hmac.digest('hex');
-		return freshdesk_base_url + '/login/sso/' +
-			'?name=' + escape(name) +
-			'&email=' + escape(email) +
-			'&timestamp=' + escape(timestamp) +
-			'&hash=' + escape(hash) +
-			( typeof(redirect_to) === 'string' ? '&redirect_to=' + escape(redirect_to) : '' );
-	}
+/**
+ * Generates and returns a Freshdesk Single Sign On URL
+ * {@link https://gist.github.com/derekseymour/26a6fe573c1274642976 Gist}
+ *
+ * @author Derek Seymour <derek@rocketideas.com>
+ * @param {String} name - The name of the user logging in.
+ * @param {String} email - A valid email address to associate with the user.
+ * @param {String} [redirect_to] - An optional URL to redirect to after logging in.
+ * @returns {String} Freshdesk SSO URL.
+ */
+function getSSOUrl(name, email, redirect_to) {
+  var freshdesk_secret = '046926591b0f9b31d43628f3b204ad3c';
+  var freshdesk_base_url = 'https://piserveassist.freshdesk.com';
+
+  var timestamp = Math.floor(new Date().getTime() / 1000).toString();
+  var hmac = crypto.createHmac('md5', freshdesk_secret);
+  hmac.update(name + freshdesk_secret + email + timestamp);
+  var hash = hmac.digest('hex');
+  return freshdesk_base_url + '/login/sso/' +
+    '?name=' + escape(name) +
+    '&email=' + escape(email) +
+    '&timestamp=' + escape(timestamp) +
+    '&hash=' + escape(hash) +
+    ( typeof(redirect_to) === 'string' ? '&redirect_to=' + escape(redirect_to) : '' );
+}
