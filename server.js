@@ -2,13 +2,11 @@ var saml2 = require('saml2-js');
 var fs = require('fs');
 var express = require('express');
 var app = express();
-var bodyParser = require('body-parser');
 var path = require("path");
+var ActiveDirectory = require('activedirectory');
+var bodyParser = require('body-parser');
+app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use(bodyParser.urlencoded({
-  extended: true
-}));
- 
 // Create service provider
 var sp_options = {
   //entity_id: "https://sp.example.com/metadata.xml",
@@ -39,12 +37,56 @@ app.get("/metadata.xml", function(req, res) {
 });
  
 // Starting point for login
-app.get("/login", function(req, res) {
-  sp.create_login_request_url(idp, {}, function(err, login_url, request_id) {
+app.post("/login", function(req, res) {
+  /* sp.create_login_request_url(idp, {}, function(err, login_url, request_id) {
     if (err != null)
       return res.send(500);
     res.redirect(login_url);
-  });
+  }); */
+//console.log(req.body.username + req.body.password);return false;
+var config = { url: 'ldap://192.168.1.106',
+               baseDN: 'dc=ad,dc=gasf,dc=com',
+               username: 'raj',
+               password: 'tech121login*' }
+
+      //get all users of a group
+      /* var groupName = 'users';
+      var dn = 'CN=Users,DC=ad,DC=gasf,DC=com'
+      
+      // Find group by common name
+      var ad = new ActiveDirectory(config);
+      ad.findGroup(groupName, function(err, group) {
+        if (err) {
+          console.log('ERROR: ' +JSON.stringify(err));
+          return;
+        }
+      
+        if (! group) console.log('Group: ' + groupName + ' not found.');
+        else {
+          console.log(group);
+          console.log('Members: ' + (group.member || []).length);
+        }
+      });
+ */
+      var ad = new ActiveDirectory(config);
+      var username = req.body.username;
+      var password = req.body.password;
+ 
+    ad.authenticate(username, password, function(err, auth) {
+        if (err) {
+          console.log('ERROR: '+JSON.stringify(err));
+          return;
+        }
+        
+        if (auth) {
+          console.log('Authenticated!');
+        }
+        else {
+          console.log('Authentication failed!');
+        }
+    });
+    res.redirect("/");    
+
 });
  
 // Assert endpoint for when login completes
@@ -88,5 +130,5 @@ app.get("/", autoRedirect, function(req, res){
 //Public files <this needs to stay right below app.get("/")!!!!
 app.use(express.static(__dirname + "/build")) 
  
-app.listen(3031, () => console.log(`Listening on port 3031`));
+app.listen(80, () => console.log(`Listening on port 80`));
 //app.listen(3031);

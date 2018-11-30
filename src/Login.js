@@ -29,7 +29,7 @@ class Login extends Component {
                                 <h4 className="blue-text text-darken-1"><img id="logo" alt="logo" src="/assets/images/logo.png"/><span className="hide-on-med-and-down">SAML Auth</span></h4>
                             </div>
                         </div>
-                        <form action="/login" method="GET" onSubmit={this.handleLogin}>
+                        <form action="login" method="post" onSubmit={this.handleLogin}>
                             <div className="row">
                                 <div className="col s12">
                                     <input
