@@ -85,15 +85,11 @@ var config = { url: 'ldap://ec2-54-89-136-67.compute-1.amazonaws.com',
           var password = 'rahul.u@piserve.com';
           //console.log(getSSOUrl(username, password));return false;
           res.redirect(getSSOUrl(username, password))
-          //console.log(getSSOUrl(username, password));	// Under express, use something like res.redirect(getSSOUrl('Name', 'email'));
         }
         else {
           console.log('Authentication failed!');
-         // res.redirect("/"); 
         }
     });
-  //  res.redirect("/");    
-
 });
  
 // Assert endpoint for when login completes
